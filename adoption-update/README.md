@@ -31,4 +31,6 @@ O365ADMINPWD
     SET O365TENANT=xxxxx
     SET O365ADMINPWD=********
 
+### Setting the variables in Azure Functions
+[Configuring Azure Functions](../_docs/CONFIGURE.md)
 
