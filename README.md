@@ -16,5 +16,8 @@ This solution contains a library of "Click and play" functions that allows you t
 ### Disclaimer ###
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
 
+# Functions included #
+[Navigate here for an overview of all functions and their usage](_docs/readme.md)
+
 ### Credits ###
 https://github.com/SharePoint/PnP-PowerShell
