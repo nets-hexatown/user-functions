@@ -17,7 +17,8 @@ This solution contains a library of "Click and play" functions that allows you t
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
 
 # Functions included #
-[Navigate here for an overview of all functions and their usage](./_docs/readme.md)
+[Navigate here for an overview of all functions and their usage (MASTER)](https://github.com/Hexatown/user-functions/tree/master/_docs)
+[Navigate here for an overview of all functions and their usage (BETA)](https://github.com/Hexatown/user-functions/tree/beta/_docs)
 
 ### Credits ###
 https://github.com/SharePoint/PnP-PowerShell
