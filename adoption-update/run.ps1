@@ -1,3 +1,11 @@
+#*********************************************************
+#  User Adoption Tracking
+#  ----------------------
+#
+# version 0.1 baseline
+# 
+#*********************************************************
+
 if ($PSScriptRoot){
     Import-Module ".\modules\hexa-functions.psm1"
     Import-Module ".\modules\SharePointPnPPowerShellOnline.psd1"
