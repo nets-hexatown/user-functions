@@ -1,5 +1,5 @@
 Import-Module ".\_modules\hexa-functions.psm1"
-Import-Module "._modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1"
+Import-Module ".\_modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1"
 
 
 Enter-Hexa $req $res $PSScriptRoot
