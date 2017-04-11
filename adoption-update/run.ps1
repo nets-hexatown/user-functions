@@ -19,9 +19,10 @@ Enter-Hexa $req $res $PSScriptRoot
 
 Connect-AzureAD -Credential $global:credentials
 
-$users = Get-AzureADUser  -top 50  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
-
-write-output $users
+write-output "Reading users"
+$users = Get-AzureADUser  -top 10000 # -All $true  #  -top 50  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
+write-output "got $($users.count) users"
+#write-output $users
 
 $tenant = $global:O365TENANT
 $relativeUrl = $global:request.siteRelativeUrl
@@ -31,15 +32,15 @@ Connect-PnPOnline -Url $url -Credentials ($global:credentials)
 $userAdoptionListname = "User Adoption Status"
 
 function CreateUserAdoptionList($userAdoptionListname){
-    Remove-PnPList -Identity $userAdoptionListname -Force
+    #Remove-PnPList -Identity $userAdoptionListname -Force
     write-Output "Checking status list"
-    $list = Get-PnPList $listname 
+    $list = Get-PnPList $userAdoptionListname 
     if ($list -eq $null){
 
         Write-Output "Creating list $userAdoptionListname"
-        New-PnPList -Title $userAdoptionListname -Template "Custom"
+        New-PnPList -Title $userAdoptionListname -Template "Custom" -ErrorAction:Stop
         Set-PnPList -Identity $userAdoptionListname -EnableVersioning $true
-        Add-PnPField -List $userAdoptionListname -DisplayName "UPN" -InternalName "UPN" -Type:Text -AddToDefaultView
+        Add-PnPField -List $userAdoptionListname -DisplayName "UserPrincipalName" -InternalName "UserPrincipalName" -Type:Text -AddToDefaultView
         Add-PnPField -List $userAdoptionListname -DisplayName "User Email" -InternalName "user_email" -Type:Text -AddToDefaultView
         Add-PnPField -List $userAdoptionListname -DisplayName "Location" -InternalName "location" -Type:Text  -AddToDefaultView
         Add-PnPField -List $userAdoptionListname -DisplayName "Country" -Type:Text -InternalName "country" -AddToDefaultView
@@ -56,15 +57,19 @@ function CreateUserAdoptionList($userAdoptionListname){
      }
 }
 
-CreateUserAdoptionList userAdoptionListname
+CreateUserAdoptionList  $userAdoptionListname
 
-Write-Output "Adding test entry"
+# Write-Output "Adding test entry"
 $list = Get-PnPList $userAdoptionListname 
 $usersInList = Get-PnPListItem -List $userAdoptionListname 
 
-$allusers = $users | select UserPrincipalName
-$knownusers = $usersInList | select UPN
+$currentUsers = $users | select UserPrincipalName
+$knownUsers = $usersInList | select UserPrincipalName
+$diff =  Compare-Object -ReferenceObject $currentUsers -DifferenceObject $knownUsers
 
+foreach ($user in $diff) {
+    Write-Output  $user
+}
 # $itemcreateinfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
 # $listitem = $list.AddItem($itemcreateinfo)
 # $listitem["Title"] = "Niels (niels@365admin.net)"
