@@ -20,5 +20,30 @@ This solution contains a library of "Click and play" functions that allows you t
 [Navigate here for an overview of all functions and their usage (MASTER)](https://github.com/Hexatown/user-functions/tree/master/_docs)
 [Navigate here for an overview of all functions and their usage (BETA)](https://github.com/Hexatown/user-functions/tree/beta/_docs)
 
+
+## Debug configuration
+### .vscode\launch.json
+
+This configuration support debugging the current PowerShell file
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+  {
+    "type": "PowerShell",
+    "request": "launch",
+    "name": "PowerShell Launch (current file)",
+    "script": "${file}",
+    "args": [],
+    "cwd": "${file}"
+  }
+  ]
+}
+``` 
+
+### config.json
+
+![](2017-04-11-19-19-00.png)
 ### Credits ###
 https://github.com/SharePoint/PnP-PowerShell

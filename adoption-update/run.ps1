@@ -19,11 +19,11 @@ Enter-Hexa $req $res $PSScriptRoot
 
 Connect-AzureAD -Credential $global:credentials
 
-$users = Get-AzureADUser  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
+$users = Get-AzureADUser  -top 50  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
 
 write-output $users
 
-$tenant = $env:O365TENANT
+$tenant = $global:O365TENANT
 $relativeUrl = $global:request.siteRelativeUrl
 $url = "https://$tenant.sharepoint.com$relativeUrl"
 Connect-PnPOnline -Url $url -Credentials ($global:credentials)
@@ -31,7 +31,7 @@ Connect-PnPOnline -Url $url -Credentials ($global:credentials)
 $userAdoptionListname = "User Adoption Status"
 
 function CreateUserAdoptionList($userAdoptionListname){
-    # Remove-PnPList -Identity $listname -Force
+    Remove-PnPList -Identity $userAdoptionListname -Force
     write-Output "Checking status list"
     $list = Get-PnPList $listname 
     if ($list -eq $null){
@@ -39,6 +39,7 @@ function CreateUserAdoptionList($userAdoptionListname){
         Write-Output "Creating list $userAdoptionListname"
         New-PnPList -Title $userAdoptionListname -Template "Custom"
         Set-PnPList -Identity $userAdoptionListname -EnableVersioning $true
+        Add-PnPField -List $userAdoptionListname -DisplayName "UPN" -InternalName "UPN" -Type:Text -AddToDefaultView
         Add-PnPField -List $userAdoptionListname -DisplayName "User Email" -InternalName "user_email" -Type:Text -AddToDefaultView
         Add-PnPField -List $userAdoptionListname -DisplayName "Location" -InternalName "location" -Type:Text  -AddToDefaultView
         Add-PnPField -List $userAdoptionListname -DisplayName "Country" -Type:Text -InternalName "country" -AddToDefaultView
@@ -59,12 +60,17 @@ CreateUserAdoptionList userAdoptionListname
 
 Write-Output "Adding test entry"
 $list = Get-PnPList $userAdoptionListname 
-$itemcreateinfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-$listitem = $list.AddItem($itemcreateinfo)
-$listitem["Title"] = "Niels (niels@365admin.net)"
-$listitem["user_email"] = "niels@365admin.net"
-$listitem.Update()
-Execute-PnPQuery
+$usersInList = Get-PnPListItem -List $userAdoptionListname 
+
+$allusers = $users | select UserPrincipalName
+$knownusers = $usersInList | select UPN
+
+# $itemcreateinfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
+# $listitem = $list.AddItem($itemcreateinfo)
+# $listitem["Title"] = "Niels (niels@365admin.net)"
+# $listitem["user_email"] = "niels@365admin.net"
+# $listitem.Update()
+# Execute-PnPQuery
 
 
 $result = $users
