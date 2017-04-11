@@ -3,7 +3,9 @@
 #  ----------------------
 #
 # version 0.1 baseline
-# 
+
+# check
+# https://github.com/Azure/azure-webjobs-sdk-script/commit/8f258be2155827df3b74f5f0ddb230b4b417415d
 #*********************************************************
 
 if ($PSScriptRoot){
