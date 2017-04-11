@@ -3,16 +3,25 @@
 #  ----------------------
 #
 # version 0.1 baseline
-# version 1.0 alpha
-# 
+# version 0.2 change modules inclusing strategy thx to
+#             https://docs.microsoft.com/en-us/powershell/azure/install-adv2?view=azureadps-2.0
+#
 #*********************************************************
 
 if ($PSScriptRoot){
     Import-Module ".\modules\hexa-functions.psm1"
-    Import-Module ".\modules\SharePointPnPPowerShellOnline.psd1"
+    Import-Module ".\modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1"
+    Import-Module ".\modules\azuread\2.0.0.98\azuread.psd1"
 }
 
 Enter-Hexa $req $res $PSScriptRoot
+
+
+Connect-AzureAD -Credential $global:credentials
+
+$users = Get-AzureADUser  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
+
+write-output $users
 
 $tenant = $env:O365TENANT
 $relativeUrl = $global:request.siteRelativeUrl
@@ -21,7 +30,7 @@ Connect-PnPOnline -Url $url -Credentials ($global:credentials)
 
 $userAdoptionListname = "User Adoption Status"
 
-function CreateUserAdoptionList(){
+function CreateUserAdoptionList($userAdoptionListname){
     # Remove-PnPList -Identity $listname -Force
     write-Output "Checking status list"
     $list = Get-PnPList $listname 
@@ -46,7 +55,7 @@ function CreateUserAdoptionList(){
      }
 }
 
-CreateUserAdoptionList
+CreateUserAdoptionList userAdoptionListname
 
 Write-Output "Adding test entry"
 $list = Get-PnPList $userAdoptionListname 
@@ -58,7 +67,7 @@ $listitem.Update()
 Execute-PnPQuery
 
 
-
+$result = $users
 
 
 
