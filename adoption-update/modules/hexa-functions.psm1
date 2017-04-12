@@ -1,4 +1,32 @@
 #  https://github.com/SharePoint/PnP-PowerShell/tree/master/Documentation
+$initConfig = @"
+{
+    "version": "0.1.0",
+    "active": "test",
+    "configurations": [
+        {
+            "name": "production",
+            "environment": [
+                {
+                    "O365ADMIN": "*****@tenant.onmicrosoft.com",
+                    "O365ADMINPWD": "*******",
+                    "O365TENANT": "tenant"
+                }
+            ]
+        },
+        {
+            "name": "test",
+            "environment": [
+                {
+                    "O365ADMIN": "*****@test-tenant.onmicrosoft.com",
+                    "O365ADMINPWD": "*******",
+                    "O365TENANT": "test-tenant"
+                }
+            ]
+        }
+    ]
+}
+"@
 function Enter-Hexa{
     param($req,$res,$this)
 
@@ -6,12 +34,17 @@ function Enter-Hexa{
     $global:o365Admin = $env:O365ADMIN
     $global:o365Tenant = $env:O365TENANT
 
-    write-output "This '$this'"
+    
     if ($this){
+        write-host -ForegroundColor "green" "Testing '$this'"
         $config = get-content "$this\..\config.json" -raw -ErrorAction:SilentlyContinue | ConvertFrom-Json
-
+        if ($config -eq $null){
+            Set-Content "$this\..\config.json" -Value $initConfig
+            Write-Host -ForegroundColor "white" -BackgroundColor "red" "Missing configuration file, new created"
+            exit 
+        }
         if ($config){
-            Write-Output  "Active config '$($config.active)'"
+            Write-Host -ForegroundColor "green"  "Active config '$($config.active)'"
             foreach ($configuration in $config.configurations) {
                 if ($config.active -eq $configuration.name){
                     foreach ($env in $configuration.environment) {

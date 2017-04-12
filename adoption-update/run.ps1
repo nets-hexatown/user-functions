@@ -9,79 +9,83 @@
 #*********************************************************
 
 if ($PSScriptRoot){
-    Import-Module ".\modules\hexa-functions.psm1"
     Import-Module ".\modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1"
+    Import-Module ".\modules\Azure.Storage\2.8.0\Azure.Storage.psd1"
     Import-Module ".\modules\azuread\2.0.0.98\azuread.psd1"
+    Import-Module ".\modules\hexa-functions.psm1"
+    Import-Module ".\modules\hexa-sharepoint.psm1"
 }
 
 Enter-Hexa $req $res $PSScriptRoot
 
+Connect-AzureAD -Credential $global:credentials -ErrorAction:Stop
+write-output Get-Date
+write-output "$(get-date) Reading users"
+$users = Get-AzureADUser  -top 100000  # -All $true  #  -top 50  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
+write-output "$(get-date) got $($users.count) users"
 
-Connect-AzureAD -Credential $global:credentials
-
-write-output "Reading users"
-$users = Get-AzureADUser  -top 10000 # -All $true  #  -top 50  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
-write-output "got $($users.count) users"
+# foreach ($u in $ul.keys) {
+#     $manager = Get-AzureADUserManager -ObjectId $u
+    
+#     if (($manager -eq $null) -or ($manager.ObjectId -eq $user.ObjectId)){
+#         $root.childs += $user
+#     }else {
+#         $i = $ul.Get_Item($u)
+#         $i.manager.ObjectId = $manager.ObjectId
+#         $ul.Set_Item($u,$i)
+#         Write-Output "has manager"
+        
+#     }
+# }
 #write-output $users
+#SharePointConnect
+#SharePointCreateUserAdoptionList  $userAdoptionListname
 
-$tenant = $global:O365TENANT
-$relativeUrl = $global:request.siteRelativeUrl
-$url = "https://$tenant.sharepoint.com$relativeUrl"
-Connect-PnPOnline -Url $url -Credentials ($global:credentials)
 
-$userAdoptionListname = "User Adoption Status"
+#Function Add-Entity: Adds an employee entity to a table.
+function Add-Entity() {
+    [CmdletBinding()]
+    param(
+        $table,
+        [String]$partitionKey,
+        [String]$rowKey,
+        [String]$json
+    )
 
-function CreateUserAdoptionList($userAdoptionListname){
-    #Remove-PnPList -Identity $userAdoptionListname -Force
-    write-Output "Checking status list"
-    $list = Get-PnPList $userAdoptionListname 
-    if ($list -eq $null){
+    $entity = New-Object -TypeName Microsoft.WindowsAzure.Storage.Table.DynamicTableEntity -ArgumentList $partitionKey, $rowKey
+    $entity.Properties.Add("JSON", $json)
+    
 
-        Write-Output "Creating list $userAdoptionListname"
-        New-PnPList -Title $userAdoptionListname -Template "Custom" -ErrorAction:Stop
-        Set-PnPList -Identity $userAdoptionListname -EnableVersioning $true
-        Add-PnPField -List $userAdoptionListname -DisplayName "UserPrincipalName" -InternalName "UserPrincipalName" -Type:Text -AddToDefaultView
-        Add-PnPField -List $userAdoptionListname -DisplayName "User Email" -InternalName "user_email" -Type:Text -AddToDefaultView
-        Add-PnPField -List $userAdoptionListname -DisplayName "Location" -InternalName "location" -Type:Text  -AddToDefaultView
-        Add-PnPField -List $userAdoptionListname -DisplayName "Country" -Type:Text -InternalName "country" -AddToDefaultView
-        Add-PnPField -List $userAdoptionListname -DisplayName "Department ID" -InternalName "departmentid" -Type:Text -AddToDefaultView
-        Add-PnPField -List $userAdoptionListname -DisplayName "L1" -InternalName "l1" -Type:Text  -AddToDefaultView
-        Add-PnPField -List $userAdoptionListname -DisplayName "L2" -InternalName "l2" -Type:Text 
-        Add-PnPField -List $userAdoptionListname -DisplayName "L3" -InternalName "l3" -Type:Text 
-        Add-PnPField -List $userAdoptionListname -DisplayName "L4" -InternalName "l4" -Type:Text 
-        Add-PnPField -List $userAdoptionListname -DisplayName "L5" -InternalName "l5" -Type:Text 
-
-        # Add-PnPView -List $listname -Title "Overview" -Fields "Title","User Email" -SetAsDefault:$true -ViewType:Html
-
-       
-     }
+    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
 }
 
-CreateUserAdoptionList  $userAdoptionListname
+$Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
-# Write-Output "Adding test entry"
-$list = Get-PnPList $userAdoptionListname 
-$usersInList = Get-PnPListItem -List $userAdoptionListname 
+$TableName = "Users$($global:O365TENANT)"
+$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
 
-$currentUsers = $users | select UserPrincipalName
-$knownUsers = $usersInList | select UserPrincipalName
-$diff =  Compare-Object -ReferenceObject $currentUsers -DifferenceObject $knownUsers
-
-foreach ($user in $diff) {
-    Write-Output  $user
+if ($table -eq $null) {
+    $table =  New-AzureStorageTable -Name $TableName -Context $ctx
 }
-# $itemcreateinfo = New-Object Microsoft.SharePoint.Client.ListItemCreationInformation
-# $listitem = $list.AddItem($itemcreateinfo)
-# $listitem["Title"] = "Niels (niels@365admin.net)"
-# $listitem["user_email"] = "niels@365admin.net"
-# $listitem.Update()
-# Execute-PnPQuery
+
+foreach ($user in $users) {
+    $json = convertto-json  $user
+    Add-Entity -partitionKey "users" -table $table -rowKey $user.objectId -json $json 
+    write-host "." -NoNewline
+}
+  
 
 
-$result = $users
+
+
+#$result = $users
 
 
 
 Exit-Hexa $result
+
+
+
+
 
 
