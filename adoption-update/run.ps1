@@ -24,26 +24,12 @@ write-output "$(get-date) Reading users"
 $users = Get-AzureADUser  -top 100000  # -All $true  #  -top 50  #| select MailNickName , DisplayName , UserPrincipalName, Mail, ObjectId # -All 
 write-output "$(get-date) got $($users.count) users"
 
-# foreach ($u in $ul.keys) {
-#     $manager = Get-AzureADUserManager -ObjectId $u
-    
-#     if (($manager -eq $null) -or ($manager.ObjectId -eq $user.ObjectId)){
-#         $root.childs += $user
-#     }else {
-#         $i = $ul.Get_Item($u)
-#         $i.manager.ObjectId = $manager.ObjectId
-#         $ul.Set_Item($u,$i)
-#         Write-Output "has manager"
-        
-#     }
-# }
-#write-output $users
+
 #SharePointConnect
 #SharePointCreateUserAdoptionList  $userAdoptionListname
 
-
 #Function Add-Entity: Adds an employee entity to a table.
-function Add-Entity() {
+function Add-User() {
     [CmdletBinding()]
     param(
         $table,
@@ -52,8 +38,33 @@ function Add-Entity() {
         [String]$json
     )
 
+    $user = convertfrom-json -InputObject $json
+
+    $manager = Get-AzureADUserManager -ObjectId $user.ObjectId
+
     $entity = New-Object -TypeName Microsoft.WindowsAzure.Storage.Table.DynamicTableEntity -ArgumentList $partitionKey, $rowKey
+
+    if ($user.DisplayName -ne $null) {
+        $entity.Properties.Add("DisplayName", $user.DisplayName)
+    }
+    if ($manager -ne $null){
+        $entity.Properties.Add("Manager", $manager.UserPrincipalName)
+        $entity.Properties.Add("ManagerObjectId", $manager.ObjectId)
+    }
+    if ($user.Mail -ne $null) {
+        $entity.Properties.Add("Mail", $user.Mail)
+    }
+    if ($user.UserPrincipalName -ne $null) {
+        $entity.Properties.Add("UserPrincipalName", $user.UserPrincipalName)
+    }
+    if ($user.UserType -ne $null) {
+        $entity.Properties.Add("UserType", $user.UserType)
+    }
+    if ($user.DirSyncEnabled -ne $null) {
+        $entity.Properties.Add("DirSyncEnabled", $user.DirSyncEnabled)
+    }
     $entity.Properties.Add("JSON", $json)
+
     
 
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
@@ -69,8 +80,9 @@ if ($table -eq $null) {
 }
 
 foreach ($user in $users) {
-    $json = convertto-json  $user
-    Add-Entity -partitionKey "users" -table $table -rowKey $user.objectId -json $json 
+    $json = ConvertTo-Json -InputObject $user
+    
+    Add-User -partitionKey "users" -table $table -rowKey $user.objectId -json $json 
     write-host "." -NoNewline
 }
   
