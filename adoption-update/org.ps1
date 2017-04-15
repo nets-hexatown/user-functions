@@ -35,15 +35,17 @@ $query.TakeCount = 20000
 #Execute the query.
 write-output "$(get-date) Reading users from Storage Table"
 $entities = $table.CloudTable.ExecuteQuery($query)
-write-output "$(get-date) Users Read"
-write-output "----"
+
 
 $users = @{}
 $managers = @{}
 
 foreach ($user in $entities) {
     $u = @{}
+    $userObject = convertfrom-json $user.Properties["JSON"].StringValue
     $u.UserPrincipalName = $user.Properties["UserPrincipalName"].StringValue
+    $u.Department = $userObject.Department
+    $u.DisplayName = $userObject.DisplayName
     $u.Manager = $user.Properties["Manager"].StringValue
 
     if ($u["Manager"] -ne $null){
@@ -55,17 +57,70 @@ foreach ($user in $entities) {
     $users.add($u.UserPrincipalName,$u) 
 }
 
+write-output "$(get-date) Users Read"
 
 $root = $null
 
 
+function Add-Manager() {
+    [CmdletBinding()]
+    param(
+        $table,
+        [String]$partitionKey,
+        [String]$managerId,
+        [String]$json
+    )
+
+    $manager = convertfrom-json -InputObject $json
+    $entity = New-Object -TypeName Microsoft.WindowsAzure.Storage.Table.DynamicTableEntity -ArgumentList $partitionKey, $managerId
+    $user = $users[$managerId]
+    if ($user["Department"] -ne $null) {
+        $entity.Properties.Add("Department", $user["Department"])
+    }
+    if ($user["DisplayName"] -ne $null) {
+        $entity.Properties.Add("DisplayName", $user["DisplayName"])
+    }
+
+    for ($i = 0; $i -lt $manager.Managers.Count; $i++) {
+        $level = $manager.Managers.Count - $i
+        $entity.Properties.Add("L$level", $manager.Managers[$i])
+    }
+    
+    $ownLevel = ($manager.Managers.Count+1)
+    $entity.Properties.Add("L$ownLevel", $managerId)
+
+    $entity.Properties.Add("ManagerLevel",$ownLevel )
+    
+#    $entity.Properties.Add("JSON", $json)
+    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
+}
+
+write-output "$(get-date) Processing Managers"
+
+$Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
+
+$TableName = "Managers$($global:O365TENANT)"
+$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
+
+if ($table -eq $null) {
+    $table =  New-AzureStorageTable -Name $TableName -Context $ctx
+}
 
 
 foreach ($manager in $managers.Values) {
+    if ($manager -eq "ahatt@nets.eu"){
+        write-output ahatt@nets.eu
+    }
     $thisManager = $users[$manager]
     $users[$manager].Managers = @() 
     $seekUp = $true
+    $last = $null
     while ($seekUp){
+        if ($thisManager["Manager"] -eq $null){
+            $seekUp = $false
+        }
+        else
+        {
         $managersManagerId = $thisManager["Manager"]
         $managersManager = $users[$managersManagerId]
         if (($managersManagerId -ne $manager) -and ($managersManagerId -ne $null) -and ($managersManagerId -ne $last)){
@@ -76,8 +131,14 @@ foreach ($manager in $managers.Values) {
         }
         $thisManager = $users[$managersManagerId]
         $last = $managersManagerId
+        }
     }
+    $json = ConvertTo-Json  $users[$manager]
+    Add-Manager -json $json -table $table -partitionKey "managers" -managerId $users[$manager]["UserPrincipalName"]
 
 }
+
+write-output "$(get-date) Managers Processed"
+
 
 Write-Output $org.Count;
