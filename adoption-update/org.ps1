@@ -99,7 +99,7 @@ write-output "$(get-date) Processing Managers"
 
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
-$TableName = "Managers$($global:O365TENANT)"
+$TableName = "Managers$($global:O365TENANT)TEMP"
 $table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
 
 if ($table -eq $null) {
@@ -108,9 +108,6 @@ if ($table -eq $null) {
 
 
 foreach ($manager in $managers.Values) {
-    if ($manager -eq "ahatt@nets.eu"){
-        write-output ahatt@nets.eu
-    }
     $thisManager = $users[$manager]
     $users[$manager].Managers = @() 
     $seekUp = $true
