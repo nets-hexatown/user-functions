@@ -6,6 +6,7 @@
 # version 0.2 change modules inclusing strategy thx to
 #             https://docs.microsoft.com/en-us/powershell/azure/install-adv2?view=azureadps-2.0
 #
+# https://itfordummies.net/2016/09/13/measure-office-365-usage/
 #*********************************************************
 
 if ($PSScriptRoot){
@@ -67,7 +68,7 @@ function Add-User() {
 
     
 
-    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
+    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::InsertOrMerge($entity))
 }
 
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY

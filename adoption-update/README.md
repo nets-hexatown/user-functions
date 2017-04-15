@@ -1,7 +1,7 @@
 
 # Adoption
 > This function  is in a early alpha, make a fork and start contributing is you can see any purpose of this!
-
+> Found that Microsoft are releasing (https://blogs.office.com/2016/10/10/announcing-the-preview-of-the-office-365-adoption-content-pack-in-power-bi/) in April 2017
 User adoption tracked by reading out indicators from Azure. Initial focus is to track that a user have:
 
 - [x] Display Name
@@ -18,6 +18,7 @@ User adoption tracked by reading out indicators from Azure. Initial focus is to 
 - [ ] Last date tracked on Workplace usage
 
 Status is stored in a SharePoint list named "User Adoption Status"
+
 
 ## Required environment variables
 
