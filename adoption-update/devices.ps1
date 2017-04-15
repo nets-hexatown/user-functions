@@ -14,33 +14,12 @@ Enter-Hexa $req $res $PSScriptRoot
 
 
 Connect-AzureAD -Credential $global:credentials -ErrorAction:Stop
-$devices = Get-AzureADUserOwnedDevice -ObjectId "53f9be00-744a-4b7c-af14-9728cc2d234a"  #$userObject.ObjectId 
-
-$userDevices = @()
-
-foreach ($device in $devices) {
-    if ($device.DeviceOSVersion -eq "Windows 10"){
-        $lastLogin = $device.ApproximateLastLogonTimeStamp
-        $DisplayName = $device.DisplayName
-        $DevicesOSType = $device.DeviceOSType
-        $DevicesOSVersion = $device.DeviceOSVersion
-        $userDevices += $DisplayName
-    }
-}
-
-
-write-host $userDevices
-
-return
-
-
-
 
 
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
 $TableName = "Users$($global:O365TENANT)"
-$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
+$userTable = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
 
 #Create a table query.
 $query = New-Object Microsoft.WindowsAzure.Storage.Table.TableQuery
@@ -50,7 +29,7 @@ $list = New-Object System.Collections.Generic.List[string]
 $list.Add("RowKey")
 $list.Add("UserPrincipalName")
 $list.Add("DisplayName")
-$list.Add("Manager")
+
 $list.Add("JSON")
 
 #Set query details.
@@ -60,25 +39,66 @@ $query.TakeCount = 20000
 
 #Execute the query.
 write-output "$(get-date) Reading users from Storage Table"
-$entities = $table.CloudTable.ExecuteQuery($query)
+$entities = $userTable.CloudTable.ExecuteQuery($query)
 
 
-$users = @{}
-$managers = @{}
+
+
+#write-output "$(get-date) Devices Processed"
+function Add-Device() {
+    [CmdletBinding()]
+    param(
+        $table,
+        [String]$partitionKey,
+        [String]$userId,
+        [String]$devices,
+        [String]$json
+        
+    )
+
+    $entity = New-Object -TypeName Microsoft.WindowsAzure.Storage.Table.DynamicTableEntity -ArgumentList $partitionKey, $userId
+    
+    $entity.Properties.Add("Devices",$devices)
+
+    
+    $entity.Properties.Add("JSON", $json)
+    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
+}
+
+write-output "$(get-date) Processing Devices"
+
+$Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
+
+$TableName = "Windows10$($global:O365TENANT)"
+$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
+
+if ($table -eq $null) {
+    $table =  New-AzureStorageTable -Name $TableName -Context $ctx
+}
+
 foreach ($user in $entities) {
     $u = @{}
     $userObject = convertfrom-json $user.Properties["JSON"].StringValue
     $u.UserPrincipalName = $user.Properties["UserPrincipalName"].StringValue
     $u.DisplayName = $userObject.DisplayName
+    
+    $devices = Get-AzureADUserOwnedDevice -ObjectId $userObject.ObjectId
+    $userDevices = @()
+    foreach ($device in $devices) {
+        if ($device.DeviceOSType -eq "Windows"){
+           $userDevices += "$($device.DisplayName) ($($device.DeviceOSVersion))" 
+        }
+    }
+    
+    if ($userDevices.count -gt 0){
+        write-host "X" -NoNewline
+        Add-Device -table $table -userId $u.UserPrincipalName -devices ($userDevices -join ",") -json (convertto-json $devices)
+    }else {
+        write-host "." -NoNewline
+    }
 
-
-    $users.add($u.UserPrincipalName,$u) 
 }
 
-write-output "$(get-date) Users Read"
-
-
-#write-output "$(get-date) Devices Processed"
-
+write-output "$(get-date) Devices Processed"
 
 Write-Output $org.Count;

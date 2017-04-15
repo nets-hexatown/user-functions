@@ -9,8 +9,8 @@ User adoption tracked by reading out indicators from Azure. Initial focus is to 
 - [ ] First date seen
 - [ ] Last date seen
 - [ ] Is active
-- [ ] Core license: E1 or E3 or E5
-- [ ] Enrolled a Windows 10 device - name of last device enrolled
+- [x] Core license: E3 and/or EMS
+- [x] Enrolled a Windows 10 device - name of enrolled devices
 - [ ] Number of licenses actived for Microsoft Office365 ProPlus
 - [ ] Last date tracked on OneDrive for Business usage
 - [ ] Last date tracked on Skype for  for Business usage
