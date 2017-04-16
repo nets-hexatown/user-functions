@@ -3,10 +3,11 @@
 #  ----------------------
 #
 # version 0.1 baseline
-# version 0.2 change modules inclusing strategy thx to
+# version 0.2 change modules inclusion strategy thx to
 #             https://docs.microsoft.com/en-us/powershell/azure/install-adv2?view=azureadps-2.0
 #
 # https://itfordummies.net/2016/09/13/measure-office-365-usage/
+# https://365lab.net/2017/01/03/create-simple-powerbi-reports-for-intune-through-the-microsoft-graph/
 #*********************************************************
 
 if ($PSScriptRoot){
@@ -64,6 +65,7 @@ function Add-User() {
     if ($user.DirSyncEnabled -ne $null) {
         $entity.Properties.Add("DirSyncEnabled", $user.DirSyncEnabled)
     }
+    
     $entity.Properties.Add("JSON", $json)
 
     
@@ -84,7 +86,7 @@ foreach ($user in $users) {
     $json = ConvertTo-Json -InputObject $user
     
     Add-User -partitionKey "users" -table $table -rowKey $user.objectId -json $json 
-    write-host "." -NoNewline
+    write-host "." -NoNewline -ErrorAction:SilentlyContinue # Will fail in Function app
 }
   
 
