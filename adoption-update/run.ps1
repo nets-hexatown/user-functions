@@ -86,7 +86,9 @@ foreach ($user in $users) {
     $json = ConvertTo-Json -InputObject $user
     
     Add-User -partitionKey "users" -table $table -rowKey $user.objectId -json $json 
-    write-host "." -NoNewline -ErrorAction:SilentlyContinue # Will fail in Function app
+    if ($PSScriptRoot){
+        write-host "." -NoNewline  # Will fail in Function app
+    }
 }
   
 
