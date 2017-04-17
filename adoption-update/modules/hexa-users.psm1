@@ -40,7 +40,7 @@ function Add-HexaUser() {
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::InsertOrMerge($entity))
     $global:TableOperations += 1
     if ($PSScriptRoot){
-        write-host "." -NoNewline  # Will fail in Function app
+      #  write-host "." -NoNewline  # Will fail in Function app
     }
 
 }
@@ -71,7 +71,7 @@ function Update-LicensesUser() {
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Merge($entity))
     $global:TableOperations += 1
     if ($PSScriptRoot){
-        write-host "." -NoNewline  # Will fail in Function app
+      #  write-host "." -NoNewline  # Will fail in Function app
     }
 
 }

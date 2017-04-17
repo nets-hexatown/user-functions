@@ -82,7 +82,7 @@ foreach ($user in $entities) {
     $licences = Get-AzureADUserLicenseDetail -ObjectId  $userObjectId
   
     Update-User -table $userTable -entity $user -e3License  (HasLicense $licences "ENTERPRISEPACK")  -emsLicense  (HasLicense $licences "EMS") 
-    write-host "." -NoNewline
+#    write-host "." -NoNewline
 
 }
 

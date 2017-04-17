@@ -39,15 +39,15 @@ function Enter-Hexa{
     $global:HEXAUSERSTORAGEACCOUNTKEY = $env:HEXAUSERSTORAGEACCOUNTKEY
     
     if ($this){
-        write-host -ForegroundColor "green" "Testing '$this'"
+      #  write-host -ForegroundColor "green" "Testing '$this'"
         $config = get-content "$this\..\config.json" -raw -ErrorAction:SilentlyContinue | ConvertFrom-Json
         if ($config -eq $null){
             Set-Content "$this\..\config.json" -Value $initConfig
-            Write-Host -ForegroundColor "white" -BackgroundColor "red" "Missing configuration file, new created"
+            # Write-Host -ForegroundColor "white" -BackgroundColor "red" "Missing configuration file, new created"
             exit 
         }
         if ($config){
-            Write-Host -ForegroundColor "green"  "Active config '$($config.active)'"
+           # Write-Host -ForegroundColor "green"  "Active config '$($config.active)'"
             foreach ($configuration in $config.configurations) {
                 if ($config.active -eq $configuration.name){
                     foreach ($env in $configuration.environment) {

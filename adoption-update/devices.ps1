@@ -88,10 +88,10 @@ foreach ($user in $entities) {
     }
     
     if ($userDevices.count -gt 0){
-        write-host "X" -NoNewline
+       # write-host "X" -NoNewline
         Add-Device -table $table -userId $u.UserPrincipalName -devices ($userDevices -join ",") -json (convertto-json $devices)
     }else {
-        write-host "." -NoNewline
+       # write-host "." -NoNewline
     }
 
 }
