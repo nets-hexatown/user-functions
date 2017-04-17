@@ -9,7 +9,7 @@ $root = $PSScriptRoot
 if ($root -eq  $null)
 {
     
-    $root = "$($env:HOME)\wwwroot\$name"
+    $root = ($env:HOME +  "\wwwroot\" + $name)
     Write-Output "Running in Azure '$root'"
 }
 
