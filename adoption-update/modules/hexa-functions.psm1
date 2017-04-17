@@ -33,7 +33,6 @@ function Enter-Hexa{
     $global:o365AdminPwd = $env:O365ADMINPWD
     $global:o365Admin = $env:O365ADMIN
     $global:o365Tenant = $env:O365TENANT
-
     
     if ($this){
         write-host -ForegroundColor "green" "Testing '$this'"
@@ -85,6 +84,17 @@ function Enter-Hexa{
 
 }
 
+function Get-Parameter{
+    param(
+        $name
+    )
+    $result = Get-Variable -Name $name -Scope Global
+    if ($result -eq $null){
+        Write-Error "Environment variable '$name' is not set"
+        exit 
+    }
+    return $result
+}
 function Exit-Hexa{
     param(
         $result
