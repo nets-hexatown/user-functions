@@ -31,13 +31,11 @@ function Enter-Hexa{
     param($req,$res,$this)
 
 
-    if ((gwmi win32_operatingsystem | select osarchitecture).osarchitecture -eq "64-bit")
-    {
+    if ((gwmi win32_operatingsystem | select osarchitecture).osarchitecture -eq "64-bit") {
         #64 bit logic here
         #Write "64-bit OS"
     }
-    else
-    {
+    else {
         #32 bit logic here
         Write-Output "64 bit environment required"
         exit 
@@ -64,8 +62,8 @@ function Enter-Hexa{
                         foreach ($pair in $env){
                             foreach ($property in $pair.PSObject.Properties) {
                                 
-                                 Set-Variable -Name $property.Name  -Value $property.Value  -Scope Global
-                                }
+                                Set-Variable -Name $property.Name  -Value $property.Value  -Scope Global
+                            }
                             
                         }
                     }
@@ -113,6 +111,7 @@ function Get-Parameter{
     return $v.ToString()
 
 }
+
 function Exit-Hexa{
     param(
         $result
@@ -134,3 +133,8 @@ function Exit-Hexa{
     write-output "*********************************************"
 
 }
+
+function Hexa-Log($text){
+    write-output "$(get-date -Format 'HH:MM:SS')  $text"
+}
+
