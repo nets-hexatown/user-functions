@@ -1,6 +1,5 @@
 # https://blogs.technet.microsoft.com/treycarlee/2014/12/09/powershell-licensing-skus-in-office-365/
 
-
 # If hosted in Azure Web Jobs modules are auto loaded
 if ($PSScriptRoot){
     Import-Module ".\modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1" -ErrorAction:SilentlyContinue
