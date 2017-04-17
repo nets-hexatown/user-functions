@@ -45,6 +45,8 @@ function Enter-Hexa{
     $global:o365AdminPwd = $env:O365ADMINPWD
     $global:o365Admin = $env:O365ADMIN
     $global:o365Tenant = $env:O365TENANT
+    $global:HEXAUSERSTORAGEACCOUNT = $env:HEXAUSERSTORAGEACCOUNT
+    $global:HEXAUSERSTORAGEACCOUNTKEY = $env:HEXAUSERSTORAGEACCOUNTKEY
     
     if ($this){
         write-host -ForegroundColor "green" "Testing '$this'"
@@ -100,12 +102,16 @@ function Get-Parameter{
     param(
         $name
     )
+    
+
     $result = Get-Variable -Name $name -Scope Global
     if ($result -eq $null){
         Write-Output "Environment variable '$name' is not set"
         exit 
     }
-    return $result
+    $v = $result.value
+    return $v.ToString()
+
 }
 function Exit-Hexa{
     param(

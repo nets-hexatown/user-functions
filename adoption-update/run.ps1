@@ -73,7 +73,7 @@ function Add-User() {
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::InsertOrMerge($entity))
 }
  
-$Ctx = New-AzureStorageContext (Get-Parameter "HEXAUSERSTORAGEACCOUNT") -StorageAccountKey (Get-Parameter "HEXAUSERSTORAGEACCOUNTKEY")
+$Ctx = New-AzureStorageContext -StorageAccountName (Get-Parameter "HEXAUSERSTORAGEACCOUNT")   -StorageAccountKey (Get-Parameter "HEXAUSERSTORAGEACCOUNTKEY")
 
 $TableName = "Users$($global:O365TENANT)"
 $table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
