@@ -46,13 +46,63 @@ function Add-HexaUser() {
 }
 
 function Get-HexaTable($name){
-$Ctx = New-AzureStorageContext -StorageAccountName (Get-Parameter "HEXAUSERSTORAGEACCOUNT")   -StorageAccountKey (Get-Parameter "HEXAUSERSTORAGEACCOUNTKEY")
-$TableName = "$name$($global:O365TENANT)"
-$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
-if ($table -eq $null) {
-    $table =  New-AzureStorageTable -Name $TableName -Context $ctx
-}
-return table
+    $Ctx = New-AzureStorageContext -StorageAccountName (Get-Parameter "HEXAUSERSTORAGEACCOUNT")   -StorageAccountKey (Get-Parameter "HEXAUSERSTORAGEACCOUNTKEY")
+    $TableName = "$name$($global:O365TENANT)"
+    $table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
+    if ($table -eq $null) {
+        $table =  New-AzureStorageTable -Name $TableName -Context $ctx
+    }
+    return $table
 }
 
 
+function Update-LicensesUser() {
+    [CmdletBinding()]
+    param(
+        $table,
+        $entity,
+        [String]$e3License,
+        [String]$emsLicense
+    )
+
+    $entity.Properties.Add("HasLicenseE3",$e3License)
+    $entity.Properties.Add("HasLicenseEMS",$emsLicense)
+
+    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Merge($entity))
+    $global:TableOperations += 1
+    if ($PSScriptRoot){
+        write-host "." -NoNewline  # Will fail in Function app
+    }
+
+}
+
+
+function Get-TableItems($TableName,$columns){
+
+    $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
+
+    $TableName = "$TableName$($global:O365TENANT)"
+    $userTable = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
+
+    #Create a table query.
+    $query = New-Object Microsoft.WindowsAzure.Storage.Table.TableQuery
+
+    #Define columns to select.
+    $list = New-Object System.Collections.Generic.List[string]
+    
+    foreach ($column in $columns) {
+        $list.Add($column)    
+    }
+
+
+    #Set query details.
+    #$query.FilterString = "ID gt 0"
+    $query.SelectColumns = $list
+    $query.TakeCount = 2000000
+
+    #Execute the query.
+    #write-output "$(get-date) Reading users from Storage Table"
+    $entities = $userTable.CloudTable.ExecuteQuery($query)
+    return  $entities
+
+}
