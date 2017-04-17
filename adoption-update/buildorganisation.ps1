@@ -2,9 +2,6 @@
 
 # If hosted in Azure Web Jobs modules are auto loaded
 if ($PSScriptRoot){
-    Import-Module ".\modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1" -ErrorAction:SilentlyContinue
-    Import-Module ".\modules\Azure.Storage\2.8.0\Azure.Storage.psd1" -ErrorAction:SilentlyContinue
-    Import-Module ".\modules\azuread\2.0.0.98\azuread.psd1" -ErrorAction:SilentlyContinue
     Import-Module ".\modules\hexa-functions.psm1" -ErrorAction:SilentlyContinue
     Import-Module ".\modules\hexa-sharepoint.psm1" -ErrorAction:SilentlyContinue
     Import-Module ".\modules\hexa-users.psm1" -ErrorAction:SilentlyContinue
