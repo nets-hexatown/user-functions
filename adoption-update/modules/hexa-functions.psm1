@@ -30,16 +30,8 @@ $initConfig = @"
 function Enter-Hexa{
     param($req,$res,$this)
 
+    #TODO: Check Environment
 
-    if ((gwmi win32_operatingsystem | select osarchitecture).osarchitecture -eq "64-bit") {
-        #64 bit logic here
-        #Write "64-bit OS"
-    }
-    else {
-        #32 bit logic here
-        Write-Output "64 bit environment required"
-        exit 
-    }
     $global:o365AdminPwd = $env:O365ADMINPWD
     $global:o365Admin = $env:O365ADMIN
     $global:o365Tenant = $env:O365TENANT

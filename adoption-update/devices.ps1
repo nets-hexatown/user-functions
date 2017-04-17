@@ -1,7 +1,6 @@
 # https://docs.microsoft.com/en-us/azure/storage/storage-powershell-guide-full#how-to-manage-azure-tables-and-table-entities
 
 if ($PSScriptRoot){
-
     Import-Module ".\modules\hexa-functions.psm1"
     Import-Module ".\modules\hexa-sharepoint.psm1"
 }
