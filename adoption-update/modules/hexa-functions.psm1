@@ -39,7 +39,7 @@ function Enter-Hexa{
     else
     {
         #32 bit logic here
-        Write-Error "64 bit environment required"
+        Write-Output "64 bit environment required"
         exit 
     }
     $global:o365AdminPwd = $env:O365ADMINPWD
@@ -102,7 +102,7 @@ function Get-Parameter{
     )
     $result = Get-Variable -Name $name -Scope Global
     if ($result -eq $null){
-        Write-Error "Environment variable '$name' is not set"
+        Write-Output "Environment variable '$name' is not set"
         exit 
     }
     return $result
