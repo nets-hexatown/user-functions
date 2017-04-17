@@ -6,12 +6,12 @@ if ($PSScriptRoot){
 Enter-Hexa $req $res $PSScriptRoot
 $name = "adoption-update"
 $root = $PSScriptRoot
-if ($root -eq  $null)
-{
+#if ($root -eq  $null)
+#{
     
     $root = ($env:HOME +  "\wwwroot\" + $name)
     Write-Output "Running in Azure '$root'"
-}
+#}
 
 Invoke-Expression "$root\readUsers.ps1"
 Invoke-Expression "$root\updatelicenses.ps1"
