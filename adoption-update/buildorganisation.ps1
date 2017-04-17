@@ -6,6 +6,7 @@ if ($PSScriptRoot){
     Import-Module ".\modules\azuread\2.0.0.98\azuread.psd1"
     Import-Module ".\modules\hexa-functions.psm1"
     Import-Module ".\modules\hexa-sharepoint.psm1"
+    Import-Module ".\modules\hexa-users.psm1"
 }
 
 
