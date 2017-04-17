@@ -1,5 +1,5 @@
 # https://blogs.technet.microsoft.com/treycarlee/2014/12/09/powershell-licensing-skus-in-office-365/
-# https://blogs.technet.microsoft.com/treycarlee/2014/12/09/powershell-licensing-skus-in-office-365/
+
 
 if ($PSScriptRoot){
     Import-Module ".\modules\SharePointPnPPowerShellOnline\2.14.1704.0\SharePointPnPPowerShellOnline.psd1"
@@ -7,39 +7,11 @@ if ($PSScriptRoot){
     Import-Module ".\modules\azuread\2.0.0.98\azuread.psd1"
     Import-Module ".\modules\hexa-functions.psm1"
     Import-Module ".\modules\hexa-sharepoint.psm1"
+    Import-Module ".\modules\hexa-users.psm1"
 }
 
-
 Enter-Hexa $req $res $PSScriptRoot
-
-
-
 Connect-AzureAD -Credential $global:credentials -ErrorAction:Stop
-
-
-$Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
-
-$TableName = "Users$($global:O365TENANT)"
-$userTable = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
-
-#Create a table query.
-$query = New-Object Microsoft.WindowsAzure.Storage.Table.TableQuery
-
-#Define columns to select.
-$list = New-Object System.Collections.Generic.List[string]
-$list.Add("RowKey")
-$list.Add("UserPrincipalName")
-$list.Add("DisplayName")
-
-
-#Set query details.
-#$query.FilterString = "ID gt 0"
-$query.SelectColumns = $list
-$query.TakeCount = 20000
-
-#Execute the query.
-write-output "$(get-date) Reading users from Storage Table"
-$entities = $userTable.CloudTable.ExecuteQuery($query)
 
 function HasLicense ($licenses,$licenseKey){
     foreach ($license in $licenses) {
@@ -49,39 +21,21 @@ function HasLicense ($licenses,$licenseKey){
     }
 }
 
+$entities = Get-TableItems "Users" "RowKey","UserPrincipalName","DisplayName"
 
-
-function Update-User() {
-    [CmdletBinding()]
-    param(
-        $table,
-        $entity,
-        [String]$e3License,
-        [String]$emsLicense
-    )
-
-    $entity.Properties.Add("HasLicenseE3",$e3License)
-    $entity.Properties.Add("HasLicenseEMS",$emsLicense)
-
-    $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Merge($entity))
-}
-
-write-output "$(get-date) Processing Licenses"
+Hexa-Log "$(get-date) Processing Licenses"
 
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
-
+$userTable = get-hexatable "Users"
 foreach ($user in $entities) {
-    $u = @{}
-    $userObjectId = $user.RowKey
     
+    $userObjectId = $user.RowKey
     $licences = Get-AzureADUserLicenseDetail -ObjectId  $userObjectId
   
-    Update-User -table $userTable -entity $user -e3License  (HasLicense $licences "ENTERPRISEPACK")  -emsLicense  (HasLicense $licences "EMS") 
-    write-host "." -NoNewline
+    Update-LicensesUser -table $userTable -entity $user -e3License  (HasLicense $licences "ENTERPRISEPACK")  -emsLicense  (HasLicense $licences "EMS") 
+    
 
 }
 
-write-output "$(get-date) Licenses Processed"
-
-Write-Output $org.Count;
+hexa-log "$($org.Count) Licenses Processed"
