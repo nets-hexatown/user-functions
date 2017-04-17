@@ -30,10 +30,23 @@ $initConfig = @"
 function Enter-Hexa{
     param($req,$res,$this)
 
+
+    if ((gwmi win32_operatingsystem | select osarchitecture).osarchitecture -eq "64-bit")
+    {
+        #64 bit logic here
+        #Write "64-bit OS"
+    }
+    else
+    {
+        #32 bit logic here
+        Write-Output "64 bit environment required"
+        exit 
+    }
     $global:o365AdminPwd = $env:O365ADMINPWD
     $global:o365Admin = $env:O365ADMIN
     $global:o365Tenant = $env:O365TENANT
-
+    $global:HEXAUSERSTORAGEACCOUNT = $env:HEXAUSERSTORAGEACCOUNT
+    $global:HEXAUSERSTORAGEACCOUNTKEY = $env:HEXAUSERSTORAGEACCOUNTKEY
     
     if ($this){
         write-host -ForegroundColor "green" "Testing '$this'"
@@ -85,6 +98,21 @@ function Enter-Hexa{
 
 }
 
+function Get-Parameter{
+    param(
+        $name
+    )
+    
+
+    $result = Get-Variable -Name $name -Scope Global
+    if ($result -eq $null){
+        Write-Output "Environment variable '$name' is not set"
+        exit 
+    }
+    $v = $result.value
+    return $v.ToString()
+
+}
 function Exit-Hexa{
     param(
         $result
