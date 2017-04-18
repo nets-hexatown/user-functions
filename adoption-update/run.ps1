@@ -3,11 +3,15 @@
 #  ----------------------
 #
 # version 0.1 baseline
+
 # version 0.2 change modules inclusion strategy thx to
 #             https://docs.microsoft.com/en-us/powershell/azure/install-adv2?view=azureadps-2.0
 #
 # https://itfordummies.net/2016/09/13/measure-office-365-usage/
 # https://365lab.net/2017/01/03/create-simple-powerbi-reports-for-intune-through-the-microsoft-graph/
+
+# check
+# https://github.com/Azure/azure-webjobs-sdk-script/commit/8f258be2155827df3b74f5f0ddb230b4b417415d
 #*********************************************************
 
 # If hosted in Azure Web Jobs modules are auto loaded
