@@ -101,7 +101,6 @@ function Get-TableItems($TableName,$columns){
     $query.TakeCount = 2000000
 
     #Execute the query.
-    #write-output "$(get-date) Reading users from Storage Table"
     $entities = $userTable.CloudTable.ExecuteQuery($query)
     return  $entities
 
@@ -133,7 +132,7 @@ function HasLicense ($licenses,$licenseKey){
 function Update-Licenses(){
 $entities = Get-TableItems "Users" "RowKey","UserPrincipalName","DisplayName"
 
-Hexa-Log "$(get-date) Processing Licenses"
+Hexa-Log "Processing Licenses"
 
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
@@ -172,7 +171,7 @@ function Add-Device() {
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
 }
 
-function Update-Device(){
+function Update-Devices(){
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
 $TableName = "Users$($global:O365TENANT)"
@@ -198,7 +197,6 @@ $query.TakeCount = 2000000
 Hexa-Log "Reading users from Storage Table"
 $entities = $userTable.CloudTable.ExecuteQuery($query)
 
-#write-output "$(get-date) Devices Processed"
 
 Hexa-Log " Processing Devices"
 

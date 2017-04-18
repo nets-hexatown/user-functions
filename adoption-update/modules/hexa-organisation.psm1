@@ -27,7 +27,6 @@ function Add-Manager() {
 
     $entity.Properties.Add("ManagerLevel",$ownLevel )
     
-#    $entity.Properties.Add("JSON", $json)
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
 }
 

@@ -24,15 +24,21 @@ Enter-Hexa $req $res $PSScriptRoot
 
 Connect-AzureAD -Credential $global:credentials -ErrorAction:Stop
 
+write-output "** Copy Users *****"
 Copy-HexaUsers
 Output-Hexalog
 
+write-output "** Build Organiation *****"
 Build-Organisation
 Output-Hexalog
 
+write-output "** Update Licenses *****"
 Update-Licenses
 Output-Hexalog
 
+write-output "** Update Devices *****"
+Update-Devices
+Output-Hexalog
 
 Exit-Hexa $result
 
