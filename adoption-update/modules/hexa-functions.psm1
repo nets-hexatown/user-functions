@@ -127,6 +127,17 @@ function Exit-Hexa{
 }
 
 function Hexa-Log($text){
-    write-output "$(get-date -Format 'HH:MM:SS')  $text"
+    if ($global:hexaLog  -eq $null){
+        $global:hexaLog = @()
+    }
+    
+    $global:hexaLog += "$(get-date -Format 'HH:mm:ss')  $text"
 }
 
+function Output-Hexalog(){
+if ($global:hexaLog -ne $null){
+    foreach ($item in $global:hexaLog) {
+        Write-Output $item
+    }
+}
+}

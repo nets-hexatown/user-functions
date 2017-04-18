@@ -1,66 +1,3 @@
-# https://docs.microsoft.com/en-us/azure/storage/storage-powershell-guide-full#how-to-manage-azure-tables-and-table-entities
-
-# If hosted in Azure Web Jobs modules are auto loaded
-if ($PSScriptRoot){
-    Import-Module ".\modules\hexa-functions.psm1" -ErrorAction:SilentlyContinue
-    Import-Module ".\modules\hexa-sharepoint.psm1" -ErrorAction:SilentlyContinue
-    Import-Module ".\modules\hexa-users.psm1" -ErrorAction:SilentlyContinue
-} 
-
-
-Enter-Hexa $req $res $PSScriptRoot
-
-$Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
-
-$TableName = "Users$($global:O365TENANT)"
-$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
-
-#Create a table query.
-$query = New-Object Microsoft.WindowsAzure.Storage.Table.TableQuery
-
-#Define columns to select.
-$list = New-Object System.Collections.Generic.List[string]
-$list.Add("RowKey")
-$list.Add("UserPrincipalName")
-$list.Add("DisplayName")
-$list.Add("Manager")
-$list.Add("JSON")
-
-#Set query details.
-#$query.FilterString = "ID gt 0"
-$query.SelectColumns = $list
-$query.TakeCount = 20000
-
-#Execute the query.
-write-output "$(get-date) Reading users from Storage Table"
-$entities = $table.CloudTable.ExecuteQuery($query)
-
-
-$users = @{}
-$managers = @{}
-
-foreach ($user in $entities) {
-    $u = @{}
-    $userObject = convertfrom-json $user.Properties["JSON"].StringValue
-    $u.UserPrincipalName = $user.Properties["UserPrincipalName"].StringValue
-    $u.Department = $userObject.Department
-    $u.DisplayName = $userObject.DisplayName
-    $u.Manager = $user.Properties["Manager"].StringValue
-
-    if ($u["Manager"] -ne $null){
-        if ($managers.ContainsKey($u["Manager"] ) -ne $true){
-            $managers.Add($u["Manager"],$u["Manager"])
-        }
-    }
-
-    $users.add($u.UserPrincipalName,$u) 
-}
-
-write-output "$(get-date) Users Read"
-
-$root = $null
-
-
 function Add-Manager() {
     [CmdletBinding()]
     param(
@@ -94,7 +31,60 @@ function Add-Manager() {
     $result = $table.CloudTable.Execute([Microsoft.WindowsAzure.Storage.Table.TableOperation]::Insert($entity))
 }
 
-write-output "$(get-date) Processing Managers"
+function Build-Organisation(){
+$Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
+
+$TableName = "Users$($global:O365TENANT)"
+$table = Get-AzureStorageTable -Name $TableName -Context $Ctx -ErrorAction Ignore
+
+#Create a table query.
+$query = New-Object Microsoft.WindowsAzure.Storage.Table.TableQuery
+
+#Define columns to select.
+$list = New-Object System.Collections.Generic.List[string]
+$list.Add("RowKey")
+$list.Add("UserPrincipalName")
+$list.Add("DisplayName")
+$list.Add("Manager")
+$list.Add("JSON")
+
+#Set query details.
+#$query.FilterString = "ID gt 0"
+$query.SelectColumns = $list
+$query.TakeCount = 20000
+
+#Execute the query.
+Hexa-Log "Reading users from Storage Table"
+$entities = $table.CloudTable.ExecuteQuery($query)
+
+
+$users = @{}
+$managers = @{}
+
+foreach ($user in $entities) {
+    $u = @{}
+    $userObject = convertfrom-json $user.Properties["JSON"].StringValue
+    $u.UserPrincipalName = $user.Properties["UserPrincipalName"].StringValue
+    $u.Department = $userObject.Department
+    $u.DisplayName = $userObject.DisplayName
+    $u.Manager = $user.Properties["Manager"].StringValue
+
+    if ($u["Manager"] -ne $null){
+        if ($managers.ContainsKey($u["Manager"] ) -ne $true){
+            $managers.Add($u["Manager"],$u["Manager"])
+        }
+    }
+
+    $users.add($u.UserPrincipalName,$u) 
+}
+
+Hexa-Log "Users Read"
+
+$root = $null
+
+
+
+Hexa-Log "Processing Managers"
 
 $Ctx = New-AzureStorageContext $global:HEXAUSERSTORAGEACCOUNT -StorageAccountKey $global:HEXAUSERSTORAGEACCOUNTKEY
 
@@ -134,7 +124,5 @@ foreach ($manager in $managers.Values) {
 
 }
 
-write-output "$(get-date) Managers Processed"
-
-
-Write-Output $org.Count;
+Hexa-Log "$($org.Count) Managers Processed"
+}
