@@ -30,16 +30,8 @@ $initConfig = @"
 function Enter-Hexa{
     param($req,$res,$this)
 
+    #TODO: Check Environment
 
-    if ((gwmi win32_operatingsystem | select osarchitecture).osarchitecture -eq "64-bit") {
-        #64 bit logic here
-        #Write "64-bit OS"
-    }
-    else {
-        #32 bit logic here
-        Write-Output "64 bit environment required"
-        exit 
-    }
     $global:o365AdminPwd = $env:O365ADMINPWD
     $global:o365Admin = $env:O365ADMIN
     $global:o365Tenant = $env:O365TENANT
@@ -47,15 +39,15 @@ function Enter-Hexa{
     $global:HEXAUSERSTORAGEACCOUNTKEY = $env:HEXAUSERSTORAGEACCOUNTKEY
     
     if ($this){
-        write-host -ForegroundColor "green" "Testing '$this'"
+      #  write-host -ForegroundColor "green" "Testing '$this'"
         $config = get-content "$this\..\config.json" -raw -ErrorAction:SilentlyContinue | ConvertFrom-Json
         if ($config -eq $null){
             Set-Content "$this\..\config.json" -Value $initConfig
-            Write-Host -ForegroundColor "white" -BackgroundColor "red" "Missing configuration file, new created"
+            # Write-Host -ForegroundColor "white" -BackgroundColor "red" "Missing configuration file, new created"
             exit 
         }
         if ($config){
-            Write-Host -ForegroundColor "green"  "Active config '$($config.active)'"
+           # Write-Host -ForegroundColor "green"  "Active config '$($config.active)'"
             foreach ($configuration in $config.configurations) {
                 if ($config.active -eq $configuration.name){
                     foreach ($env in $configuration.environment) {
@@ -135,6 +127,17 @@ function Exit-Hexa{
 }
 
 function Hexa-Log($text){
-    write-output "$(get-date -Format 'HH:MM:SS')  $text"
+    if ($global:hexaLog  -eq $null){
+        $global:hexaLog = @()
+    }
+    
+    $global:hexaLog += "$(get-date -Format 'HH:mm:ss')  $text"
 }
 
+function Output-Hexalog(){
+if ($global:hexaLog -ne $null){
+    foreach ($item in $global:hexaLog) {
+        Write-Output $item
+    }
+}
+}
