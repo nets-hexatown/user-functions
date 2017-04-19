@@ -69,7 +69,7 @@ function Enter-Hexa{
         $Global:request =  ConvertFrom-Json -InputObject $inputJSON
     }
     else {
-        $global:result = $res
+        $Global:resultOutPutFileName = $res
         $Global:request =  Get-Content $req -Raw | ConvertFrom-Json 
     }
 
