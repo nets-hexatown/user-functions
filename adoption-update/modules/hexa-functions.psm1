@@ -63,7 +63,7 @@ function Enter-Hexa{
             }
         }
         $global:testing = $true
-        $Global:result = "$this\output.json"
+        $Global:resultOutPutFileName = "$this\output.json"
         $triggerInput = "$this\input.json"
         $inputJSON = Get-Content $triggerInput -Raw
         $Global:request =  ConvertFrom-Json -InputObject $inputJSON
@@ -114,7 +114,7 @@ function Exit-Hexa{
 
     $resultJson = ConvertTo-Json -InputObject $result
     #$_binding.log = $result
-    Out-File -Encoding Ascii -FilePath $global:result -inputObject $resultJson
+    Out-File -Encoding Ascii -FilePath $global:resultOutPutFileName -inputObject $resultJson
 
     if ($global:testing){
         write-output "TEST RESULT:"
