@@ -1,7 +1,8 @@
 # User Management and adoption tracking
+> **Note that this repo is in a very early stage - feedback appriciated to niels@365admin.net !**
 
 ### Summary ###
-This solution contains a library of "Click and play" functions that allows you to perform complex provisioning and artifact management actions towards Offic365 and other cloud services. The commands use CSOM and can work against both SharePoint Online as SharePoint On-Premises.
+This solution contains a library of "Click and play" functions that allows you to perform complex provisioning and artifact management actions towards Offic365 and other cloud services. 
 
 ![Hexatown](./_media/hexatown-logo-48h.png)
 
